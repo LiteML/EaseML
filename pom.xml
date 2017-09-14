@@ -10,6 +10,7 @@
     <version>0.0.1</version>
     <modules>
         <module>EaseML-angel</module>
+        <module>EaseML-Console</module>
     </modules>
 
     <properties>
