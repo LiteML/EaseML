@@ -11,6 +11,7 @@
     <modules>
         <module>EaseML-angel</module>
         <module>EaseML-Console</module>
+        <module>EaseML-Common</module>
     </modules>
 
     <properties>
