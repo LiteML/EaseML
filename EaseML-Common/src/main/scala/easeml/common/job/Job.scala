@@ -11,8 +11,17 @@ class Job(val id:String,
           val algorithm:String,
           val params:Map[String,Any]) {
 
-  def toJSON = {
-    implicit val formats = Serialization.formats(NoTypeHints)
-    //
+  def toJSON = Job.toJSON(this)
+}
+
+object Job {
+  private implicit val formats = Serialization.formats(NoTypeHints)
+
+  def fromJSON(json:String) = {
+    read[Job](json)
+  }
+
+  def toJSON(job:Job) = {
+    write(job)
   }
 }
