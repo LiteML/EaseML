@@ -1,5 +1,7 @@
 package easeml.common.queue
 
+import java.util.concurrent.Executors
+
 import com.rabbitmq.client._
 import easeml.common.job.Job
 
@@ -43,13 +45,26 @@ class JobConsumer(host:String,
                       port:Int,
                       user:String,
                       password:String,
-                      queue:String) extends MqBase(host, port, user, password, queue) {
+                      queue:String,
+                    parall:Int = 1) extends MqBase(host, port, user, password, queue) {
   def consume(handler : Job => Unit) = {
-    _consume{
-      msg =>
-        val msg_str = new String(msg, "utf-8")
-        val job = Job.fromJSON(msg_str)
-        handler(job)
+    val pool = Executors.newFixedThreadPool(parall)
+    println(parall)
+    0 until parall foreach{
+      i =>
+        val runnable = new Runnable {
+          override def run(): Unit = {
+            val self = this
+            _consume{
+              msg =>
+                val msg_str = new String(msg, "utf-8")
+                val job = Job.fromJSON(msg_str)
+                println( Thread.currentThread().getName -> self)
+                handler(job)
+            }
+          }
+        }
+        pool.submit(runnable)
     }
   }
 }
