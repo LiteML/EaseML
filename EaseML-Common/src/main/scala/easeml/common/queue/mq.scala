@@ -20,20 +20,26 @@ private [queue] abstract class MqBase(host:String,
   factory.setPort(port)
   protected val conn = factory.newConnection
   protected val channel = conn.createChannel()
-  channel.queueDeclare(queue, true, false, false, null)
 
   def close() = {
     channel.close()
     conn.close()
   }
 
-  protected def _consume(handler : Array[Byte] => Unit) = {
-    channel.basicConsume(queue, true, new DefaultConsumer(channel) {
-      override def handleDelivery(consumerTag: String, envelope: Envelope,
-                                  properties: AMQP.BasicProperties, body: Array[Byte]): Unit = {
-        handler(body)
-      }
-    })
+  protected def _consume(handler : Array[Byte] => Unit, parall:Int = 1) = {
+    val pool = Executors.newFixedThreadPool(parall)
+    0 until parall foreach {
+      i =>
+        val runnable = new Runnable {
+          override def run(): Unit = {
+            while(true){
+              val msg = channel.basicGet(queue, true).getBody
+              handler(msg)
+            }
+          }
+        }
+        pool.submit(runnable)
+    }
   }
 
   protected def _publish(msg: Array[Byte]): Unit = {
@@ -45,27 +51,14 @@ class JobConsumer(host:String,
                       port:Int,
                       user:String,
                       password:String,
-                      queue:String,
-                    parall:Int = 1) extends MqBase(host, port, user, password, queue) {
-  def consume(handler : Job => Unit) = {
-    val pool = Executors.newFixedThreadPool(parall)
-    println(parall)
-    0 until parall foreach{
-      i =>
-        val runnable = new Runnable {
-          override def run(): Unit = {
-            val self = this
-            _consume{
-              msg =>
-                val msg_str = new String(msg, "utf-8")
-                val job = Job.fromJSON(msg_str)
-                println( Thread.currentThread().getName -> self)
-                handler(job)
-            }
-          }
-        }
-        pool.submit(runnable)
-    }
+                      queue:String) extends MqBase(host, port, user, password, queue) {
+  def consume(handler : Job => Unit, parall:Int = 1) = {
+    _consume({
+      msg =>
+        val msg_str = new String(msg, "utf-8")
+        val job = Job.fromJSON(msg_str)
+        handler(job)
+    }, parall)
   }
 }
 
