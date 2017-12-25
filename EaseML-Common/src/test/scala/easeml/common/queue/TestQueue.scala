@@ -21,7 +21,7 @@ object TestQueue extends JUnitSuite{
 
 
   def test_consume() {
-    val consumer = new JobConsumer("localhost", 5672, "platform", "platform", "job", 2)
+    val consumer = new JobConsumer("172.30.113.253", 5672, "platform", "platform", "job", 2)
     consumer.consume{
       job =>
         println(job.toJSON)
@@ -30,7 +30,7 @@ object TestQueue extends JUnitSuite{
   }
 
   def main(args: Array[String]): Unit = {
-    test_publish()
+    //test_publish()
     test_consume()
   }
 }

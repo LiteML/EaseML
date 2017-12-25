@@ -6,3 +6,10 @@ package easeml
 class test {
 
 }
+
+object test {
+  def main(args: Array[String]): Unit = {
+    println("1")
+  }
+
+}
