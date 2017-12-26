@@ -50,7 +50,7 @@ class AngelMonitor {
     val jobId = client.getConf.get("jobId")
     // AppId
     val getAppId:(Any*) => Object = invokeMethod(client,"getAppId",null)
-    appId = getAppId.asInstanceOf[String]
+    appId = getAppId().asInstanceOf[String]
     //updateMaster
     updateMaster = invokeMethod(client,"updateMaster",java.lang.Integer.TYPE)
     //get the master
