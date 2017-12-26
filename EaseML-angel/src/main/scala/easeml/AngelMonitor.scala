@@ -40,6 +40,7 @@ class AngelMonitor {
   private var updateMaster:(Any*) => Object = _
   private var isFinished: Boolean = false
   private var lastReport:GetJobReportResponse = _
+
   def this(client2monitor:AngelClient){
     this()
     client = client2monitor
