@@ -23,7 +23,7 @@ object AngelSubmit{
   private final val properties = new Properties()
   private final val reader:BufferedReader = Source.fromURL(getClass.getResource(confFile)).bufferedReader()
   properties.load(reader)
-  private final val numThreads:Int = properties.getProperty("threads").toInt
+  private final val numThreads:Int = properties.getProperty("threads", "1").toInt
   private final val consumeHost:String = properties.getProperty("consume_host")
   private final val consumePort:Int = Integer.parseInt(properties.getProperty("consume_port"))
   private final val consumeUser:String = properties.getProperty("consume_user")
@@ -40,11 +40,10 @@ object AngelSubmit{
       consumePort,
       consumeUser,
       consumePassword,
-      consumeQueue,
-      numThreads
+      consumeQueue
     )
 
-    jobConsumer.consume{
+    jobConsumer.consume({
       job =>
         val algorithm: String = job.algorithm
         val jobId: String = job.id
@@ -59,6 +58,6 @@ object AngelSubmit{
             }
         }
         submit(jobConf)
-    }
+    },numThreads)
   }
 }
