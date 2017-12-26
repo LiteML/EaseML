@@ -40,9 +40,12 @@ class AngelMonitor {
   private var updateMaster:(Any*) => Object = _
   private var isFinished: Boolean = false
   private var lastReport:GetJobReportResponse = _
-
-  def call(publish: Metrics => Unit, client2monitor:AngelClient):Unit = {
+  def this(client2monitor:AngelClient){
+    this()
     client = client2monitor
+  }
+
+  def call(publish: Metrics => Unit): Unit = {
     val jobId = client.getConf.get("jobId")
     // AppId
     val getAppId = invokeMethod(client,"getAppId",null)
