@@ -14,6 +14,21 @@ import scala.collection.JavaConversions._
   */
 object AngelMonitor {
   val LOG:Log = LogFactory.getLog(AngelMonitor.getClass)
+
+  def getField(obj:AnyRef, fieldName: String): AnyRef= {
+    val clazz = obj.getClass
+    val field = clazz.getDeclaredField(fieldName)
+    field.setAccessible(true)
+    field.get(obj)
+  }
+
+  def invokeMethod(obj:AnyRef, methodName:String, parameterTypes: Class[_]): (Any*) => Object = {
+    val clazz = obj.getClass
+    val method:Method = clazz.getDeclaredMethod(methodName, parameterTypes)
+    method.setAccessible(true)
+    (parameters:Any*) => method.invoke(obj, parameters)
+  }
+
 }
 
 class AngelMonitor {
@@ -24,7 +39,7 @@ class AngelMonitor {
   private var client:AngelClient = _
   private var updateMaster:(Any*) => Object = _
   private var isFinished: Boolean = false
-  private var lastReport:GetJobReportResponse = null
+  private var lastReport:GetJobReportResponse = _
 
   def call(publish: Metrics => Unit, client2monitor:AngelClient):Unit = {
     client = client2monitor
@@ -43,20 +58,6 @@ class AngelMonitor {
     }
   }
 
-
-  def getField(obj:AnyRef, fieldName: String): AnyRef= {
-    val clazz = obj.getClass
-    val field = clazz.getDeclaredField(fieldName)
-    field.setAccessible(true)
-    field.get(obj)
-  }
-
-  def invokeMethod(obj:AnyRef, methodName:String, parameterTypes: Class[_]): (Any*) => Object = {
-    val clazz = obj.getClass
-    val method:Method = clazz.getDeclaredMethod(methodName, parameterTypes)
-    method.setAccessible(true)
-    (parameters:Any*) => method.invoke(obj, parameters)
-  }
 
   private def publishJobReport(publish:Metrics => Unit, jobId:String): Unit = {
     val getJobRequest: GetJobReportRequest = getGetJobReportRequest()
