@@ -8,6 +8,7 @@ import org.json4s.native.Serialization._
   * Created by takun on 26/12/2017.
   */
 class Metrics(val id:String,
+              val epoch:Int,
               val metrics:Map[String,Double]) {
   def toJSON = Metrics.toJSON(this)
 }
