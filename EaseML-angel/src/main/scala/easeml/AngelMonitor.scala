@@ -16,6 +16,7 @@ import org.apache.commons.logging.{Log, LogFactory}
 import scala.collection.JavaConversions._
 import scala.concurrent.Future
 import scala.io.Source
+import scala.util.{Failure, Success}
 /**
   * Created by chris on 12/26/17.
   */
@@ -74,7 +75,7 @@ class AngelMonitor {
     //get the master
     master = getField(client,"master").asInstanceOf[MasterProtocol]
 
-    Future {
+    val f:Future[Unit] = Future {
       try {
         while(!isFinished){
           publishJobReport(metricPublish.publish,jobId)
@@ -85,6 +86,10 @@ class AngelMonitor {
       } catch {
         case e:Exception => e.printStackTrace()
       }
+    }
+    f onComplete {
+      case Success(posts) => for(post<-posts) println(post)
+      case Failure(t) => println("An error has occured: " + t.getMessage)
     }
   }
 
@@ -104,11 +109,17 @@ class AngelMonitor {
             LOG.error("update master failed.", e1)
         }
     }
+
     isFinished = getField(client,"isFinished").asInstanceOf[Boolean]
     if(isFinished) {
+      val epoch = -1
+      val metricTable = Map[String,Double]()
+      val metrics = new Metrics(jobId,epoch,metricTable)
+      publish(metrics)
       lastReport = null
       return
     }
+
     val report: JobReportProto = response.getJobReport
     if (lastReport == null || (report.hasCurIteration && report.getCurIteration != lastReport.getJobReport.getCurIteration)) {
       val epoch = report.getCurIteration
