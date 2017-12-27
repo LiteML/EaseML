@@ -13,9 +13,15 @@
 
     <properties>
         <jetty.version>6.1.26</jetty.version>
+        <play2.version>2.6.0-M1</play2.version>
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>LiteML</groupId>
+            <artifactId>EaseML-Common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.mortbay.jetty</groupId>
             <artifactId>jetty</artifactId>
@@ -26,6 +32,108 @@
             <artifactId>start</artifactId>
             <version>${jetty.version}</version>
         </dependency>
+        <!--<dependency>
+            <groupId>com.typesafe.play</groupId>
+            <artifactId>play_${scala.binary.version}</artifactId>
+            &lt;!&ndash;<version>2.4.10</version>&ndash;&gt;
+            <version>2.6.10</version>
+        </dependency>
+        <dependency>
+            <groupId>com.typesafe.play</groupId>
+            <artifactId>run-support_2.12</artifactId>
+            <version>2.6.10</version>
+        </dependency>-->
+        <dependency>
+            <groupId>com.typesafe.play</groupId>
+            <artifactId>play_${scala.binary.version}</artifactId>
+            <version>${play2.version}</version>
+        </dependency>
+
+        <!-- default DI framework -->
+        <!-- see https://www.playframework.com/documentation/2.6.x/Migration26#Guice-DI-support-moved-to-separate-module for more info -->
+        <dependency>
+            <groupId>com.typesafe.play</groupId>
+            <artifactId>play-guice_${scala.binary.version}</artifactId>
+            <version>${play2.version}</version>
+        </dependency>
+
+        <!-- default SLF4J logging implementation, can be replaced by other -->
+        <!-- see https://www.playframework.com/documentation/2.6.x/SettingsLogger for more info -->
+        <dependency>
+            <groupId>com.typesafe.play</groupId>
+            <artifactId>play-logback_${scala.binary.version}</artifactId>
+            <version>${play2.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.typesafe.play</groupId>
+            <artifactId>play-netty-server_${scala.binary.version}</artifactId>
+            <version>${play2.version}</version>
+            <scope>runtime</scope>
+        </dependency>
     </dependencies>
 
+    <build>
+        <sourceDirectory>${basedir}/app</sourceDirectory>
+        <resources>
+            <resource>
+                <directory>${basedir}/conf</directory>
+            </resource>
+            <resource>
+                <directory>${basedir}/public</directory>
+                <targetPath>public</targetPath>
+            </resource>
+        </resources>
+        <directory>${basedir}/target/scala-${scala.binary.version}</directory>
+        <plugins>
+            <plugin>
+                <groupId>com.google.code.play2-maven-plugin</groupId>
+                <artifactId>play2-maven-plugin</artifactId>
+                <version>1.0.0-beta6</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <!-- if using controllers without dependency injection; default value is "injected" -->
+                    <routesGenerator>static</routesGenerator>
+                    <!-- only if using database evolutions -->
+                    <serverJvmArgs>-Dplay.evolutions.db.default.autoApply=true</serverJvmArgs>
+                    <!-- only if using 'play-java-forms' module -->
+                    <!--<templateAdditionalImports>play.data._ play.core.j.PlayFormsMagicForJava._</templateAdditionalImports>-->
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>routes-compile</goal>
+                            <goal>template-compile</goal>
+                            <goal>enhance</goal>
+                        </goals>
+                    </execution>
+                    <!-- only if there are assets in the project -->
+                    <execution>
+                        <id>default-play2-compile-assets</id>
+                        <goals>
+                            <!--<goal>closure-compile</goal>-->
+                            <!--<goal>coffee-compile</goal>-->
+                            <!--<goal>less-compile</goal>-->
+                            <!--<goal>routes-compile</goal>
+                            <goal>template-compile</goal>-->
+                        </goals>
+                    </execution>
+                    <!-- only if enhancement is required -->
+                    <!--<execution>
+                        <id>default-play2-enhance</id>
+                        <goals>
+                            <goal>enhance</goal>
+                            <goal>ebean-enhance</goal> &lt;!&ndash; only if using Ebean &ndash;&gt;
+                        </goals>
+                    </execution>-->
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.google.code.sbt-compiler-maven-plugin</groupId>
+                <artifactId>sbt-compiler-maven-plugin</artifactId>
+                <version>1.0.0</version>
+            </plugin>
+        </plugins>
+    </build>
 </project>
