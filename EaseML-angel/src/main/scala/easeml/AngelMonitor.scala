@@ -14,6 +14,7 @@ import easeml.common.queue.MetricsPublisher
 import org.apache.commons.logging.{Log, LogFactory}
 
 import scala.collection.JavaConversions._
+import scala.concurrent.Future
 import scala.io.Source
 /**
   * Created by chris on 12/26/17.
@@ -73,20 +74,18 @@ class AngelMonitor {
     //get the master
     master = getField(client,"master").asInstanceOf[MasterProtocol]
 
-    // Monitor polling
-      val thread = new Thread {
-        override def run(): Unit = {
-          try {
-            while(!isFinished){
-              publishJobReport(metricPublish.publish,jobId)
-              Thread.sleep(1000)
-            }
-          } catch {
-            case e:Exception => e.printStackTrace()
+    Future {
+      try {
+        while(!isFinished){
+          publishJobReport(metricPublish.publish,jobId)
+          this.synchronized {
+            this.wait(1000)
           }
         }
+      } catch {
+        case e:Exception => e.printStackTrace()
       }
-      thread.start()
+    }
   }
 
   private def publishJobReport(publish:Metrics => Unit, jobId:String): Unit = {
