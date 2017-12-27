@@ -33,10 +33,12 @@ package object messages {
 
   class Algorithm(
                  val name: String,
-                 val hyperParams: List[Algorithm.HyperParam]
-                 ) extends Message
+                 val hyperParams: List[Algorithm.HyperParam]) extends Message
 
   object Algorithm {
-    case class HyperParam(key: String, tpe: String, default:Any)
+    case class HyperParam(name: String, tpe: String, default:Any)
   }
+  class RegisterAlgorithmService(
+                  val name: String,
+                  val algorithms: List[Algorithm]) extends Message
 }

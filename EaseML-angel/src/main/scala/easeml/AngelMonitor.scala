@@ -30,11 +30,11 @@ object AngelMonitor {
     field.get(obj)
   }
 
-  def invokeMethod(obj:AnyRef, methodName:String, parameterTypes: Class[_]*): (Any*) => Object = {
+  def invokeMethod(obj:AnyRef, methodName:String, parameterTypes: Class[_]*)(parameters:AnyRef*) = {
     val clazz = obj.getClass
     val method:Method = clazz.getDeclaredMethod(methodName, parameterTypes:_*)
     method.setAccessible(true)
-    (parameters:Any*) => method.invoke(obj, parameters:_*)
+    method.invoke(obj, parameters:_*)
   }
 }
 
@@ -44,7 +44,7 @@ class AngelMonitor {
   private final var getJobReportReqBuilder: GetJobReportRequest.Builder = _
   private final var appId:String = _
   private final var client:AngelClient = _
-  private final var updateMaster:(Any*) => Object = _
+  private final var updateMaster: AnyRef => Object = _
   private final var isFinished: Boolean = false
   private final var lastReport:GetJobReportResponse = _
   private final val confFile:String = "config.properties"
@@ -68,13 +68,13 @@ class AngelMonitor {
 
     val jobId = client.getConf.get("jobId")
     // AppId
-    val getAppId:(Any*) => Object = invokeMethod(client,"getAppId",null)
-    appId = getAppId().asInstanceOf[String]
+    appId = invokeMethod(client,"getAppId",null)().asInstanceOf[String]
     //updateMaster
-    updateMaster = invokeMethod(client,"updateMaster",java.lang.Integer.TYPE)
+    updateMaster = (params:AnyRef) => invokeMethod(client,"updateMaster",java.lang.Integer.TYPE)(params)
     //get the master
     master = getField(client,"master").asInstanceOf[MasterProtocol]
 
+    import scala.concurrent.ExecutionContext.Implicits.global
     val f:Future[Unit] = Future {
       try {
         while(!isFinished){
@@ -88,6 +88,7 @@ class AngelMonitor {
       }
     }
     f onComplete {
+      // todo post is unit ?
       case Success(posts) => for(post<-posts) println(post)
       case Failure(t) => println("An error has occured: " + t.getMessage)
     }
@@ -102,7 +103,7 @@ class AngelMonitor {
       case e: Exception =>
         LOG.error("getJobReport from master failed. " + e.getMessage)
         try {
-          updateMaster(10*60)
+          updateMaster(Integer.valueOf(10*60))
           if (master != null) response = master.getJobReport(null, getJobRequest)
         } catch {
           case e1: Exception =>

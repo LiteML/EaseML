@@ -32,8 +32,8 @@ object TestQueue extends JUnitSuite{
   }
 
   def main(args: Array[String]): Unit = {
-    test_publish()
-    test_consume()
+//    test_publish()
+//    test_consume()
     val algorithm = new Algorithm("lr", List(
       Algorithm.HyperParam("epoch", "int", 10),
       Algorithm.HyperParam("learning_rate", "double", 0.1),
