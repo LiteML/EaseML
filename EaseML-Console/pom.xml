@@ -94,7 +94,8 @@
                 <extensions>true</extensions>
                 <configuration>
                     <!-- if using controllers without dependency injection; default value is "injected" -->
-                    <routesGenerator>static</routesGenerator>
+                    <!--<routesGenerator>static</routesGenerator>-->
+                    <routesGenerator>injected</routesGenerator>
                     <!-- only if using database evolutions -->
                     <serverJvmArgs>-Dplay.evolutions.db.default.autoApply=true</serverJvmArgs>
                     <!-- only if using 'play-java-forms' module -->
