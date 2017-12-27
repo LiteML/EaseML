@@ -29,12 +29,12 @@ object TestQueue extends JUnitSuite{
       job =>
         println(job.toJSON)
         Thread.sleep(5000)
-    }, parall = 2)
+    }, parall = 1)
     println("xxxxxxxxxxxxxx")
   }
 
   def main(args: Array[String]): Unit = {
-    test_publish()
+//    test_publish()
     test_consume()
   }
 }
