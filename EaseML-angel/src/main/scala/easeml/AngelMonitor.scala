@@ -34,7 +34,7 @@ object AngelMonitor {
     val clazz = obj.getClass
     val method:Method = clazz.getDeclaredMethod(methodName, parameterTypes)
     method.setAccessible(true)
-    (parameters:Any*) => method.invoke(obj, parameters)
+    (parameters:Any*) => method.invoke(obj, parameters:_*)
   }
 }
 

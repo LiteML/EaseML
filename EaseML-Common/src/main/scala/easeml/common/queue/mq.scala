@@ -3,8 +3,6 @@ package easeml.common.queue
 import java.util.concurrent.Executors
 
 import com.rabbitmq.client._
-import easeml.common.job.Job
-import easeml.common.metrics.Metrics
 
 /**
   * Created by takun on 20/11/2017.
@@ -48,49 +46,25 @@ private [queue] abstract class MqBase(host:String,
   }
 }
 
-class JobConsumer(host:String,
-                      port:Int,
-                      user:String,
-                      password:String,
-                      queue:String) extends MqBase(host, port, user, password, queue) {
-  def consume(handler : Job => Unit, parall:Int = 1) = {
+class MessageConsumer[M <: Message : Manifest](host:String,
+                                               port:Int,
+                                               user:String,
+                                               password:String,
+                                               queue:String) extends MqBase(host, port, user, password, queue) {
+  def consume(handler : M => Unit, parall:Int = 1) = {
     _consume({
       msg =>
         val msg_str = new String(msg, "utf-8")
-        val job = Job.fromJSON(msg_str)
+        val job = Message.fromJSON[M](msg_str)
         handler(job)
     }, parall)
   }
 }
 
-class JobPublisher(host:String,
+class MessagePublisher(host:String,
                        port:Int,
                        user:String,
                        password:String,
                        queue:String) extends MqBase(host, port, user, password, queue) {
-  def publish(msg : Job) = _publish(msg.toJSON.getBytes("utf-8"))
-}
-
-
-class MetricsConsumer(host:String,
-                  port:Int,
-                  user:String,
-                  password:String,
-                  queue:String) extends MqBase(host, port, user, password, queue) {
-  def consume(handler : Metrics => Unit, parall:Int = 1) = {
-    _consume({
-      msg =>
-        val msg_str = new String(msg, "utf-8")
-        val metrics = Metrics.fromJSON(msg_str)
-        handler(metrics)
-    }, parall)
-  }
-}
-
-class MetricsPublisher(host:String,
-                   port:Int,
-                   user:String,
-                   password:String,
-                   queue:String) extends MqBase(host, port, user, password, queue) {
-  def publish(msg : Metrics) = _publish(msg.toJSON.getBytes("utf-8"))
+  def publish(msg : Message) = _publish(msg.toJSON.getBytes("utf-8"))
 }
