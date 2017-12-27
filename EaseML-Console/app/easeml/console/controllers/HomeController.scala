@@ -1,8 +1,8 @@
-package controllers
+package easeml.console.controllers
 
 import javax.inject._
-import play.api._
 import play.api.mvc._
+import easeml.console.views
 
 /**
  * This controller creates an `Action` to handle HTTP requests to the

@@ -1,5 +1,6 @@
 package controllers
 
+import easeml.console.controllers.HomeController
 import org.scalatestplus.play._
 import org.scalatestplus.play.guice._
 import play.api.test._

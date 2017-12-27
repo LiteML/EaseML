@@ -1,3 +1,5 @@
+package easeml.console.controllers
+
 import easeml.common.queue.JobConsumer
 
 /**
