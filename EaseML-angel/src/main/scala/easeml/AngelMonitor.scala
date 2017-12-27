@@ -109,11 +109,17 @@ class AngelMonitor {
             LOG.error("update master failed.", e1)
         }
     }
+
     isFinished = getField(client,"isFinished").asInstanceOf[Boolean]
     if(isFinished) {
+      val epoch = -1
+      val metricTable = Map[String,Double]()
+      val metrics = new Metrics(jobId,epoch,metricTable)
+      publish(metrics)
       lastReport = null
       return
     }
+
     val report: JobReportProto = response.getJobReport
     if (lastReport == null || (report.hasCurIteration && report.getCurIteration != lastReport.getJobReport.getCurIteration)) {
       val epoch = report.getCurIteration
