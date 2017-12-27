@@ -84,7 +84,6 @@ class AngelMonitor {
           } catch {
             case e:Exception => e.printStackTrace()
           }
-
         }
       }
       thread.start()
