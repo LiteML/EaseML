@@ -1,9 +1,12 @@
 package easeml
 
 import java.io.BufferedReader
-import easeml.common.queue.JobConsumer
+
+import easeml.common.queue.MessageConsumer
 import org.apache.commons.logging.{Log, LogFactory}
 import java.util.Properties
+
+import easeml.common.queue.messages.Job
 import utils.AngelRunJar.submit
 import org.apache.hadoop.conf.Configuration
 
@@ -35,7 +38,7 @@ object AngelSubmit{
   }.toMap[String,String]*/
 
   def main(args: Array[String]): Unit = {
-    val jobConsumer = new JobConsumer(
+    val jobConsumer = new MessageConsumer[Job](
       consumeHost,
       consumePort,
       consumeUser,

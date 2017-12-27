@@ -9,8 +9,8 @@ import java.lang.reflect.Method
 import java.util.Properties
 
 import AngelMonitor._
-import easeml.common.metrics.Metrics
-import easeml.common.queue.MetricsPublisher
+import easeml.common.queue.messages.Metrics
+import easeml.common.queue.MessagePublisher
 import org.apache.commons.logging.{Log, LogFactory}
 
 import scala.collection.JavaConversions._
@@ -56,7 +56,7 @@ class AngelMonitor {
   private final val publishUser:String = properties.getProperty("publish_user")
   private final val publishPassword:String = properties.getProperty("publish_password")
   private final val publishQueue:String = properties.getProperty("publish_queue")
-  private final val metricPublish:MetricsPublisher = new MetricsPublisher(publishHost,publishPort,publishUser,publishPassword,publishQueue)
+  private final val metricPublish:MessagePublisher = new MessagePublisher(publishHost,publishPort,publishUser,publishPassword,publishQueue)
 
 
   def this(client2monitor:AngelClient){
