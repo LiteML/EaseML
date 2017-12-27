@@ -30,9 +30,9 @@ object AngelMonitor {
     field.get(obj)
   }
 
-  def invokeMethod(obj:AnyRef, methodName:String, parameterTypes: Class[_]): (Any*) => Object = {
+  def invokeMethod(obj:AnyRef, methodName:String, parameterTypes: Class[_]*): (Any*) => Object = {
     val clazz = obj.getClass
-    val method:Method = clazz.getDeclaredMethod(methodName, parameterTypes)
+    val method:Method = clazz.getDeclaredMethod(methodName, parameterTypes:_*)
     method.setAccessible(true)
     (parameters:Any*) => method.invoke(obj, parameters:_*)
   }
