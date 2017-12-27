@@ -29,10 +29,10 @@ object AngelSubmit{
   private final val consumeUser:String = properties.getProperty("consume_user")
   private final val consumePassword:String = properties.getProperty("consume_password")
   private final val consumeQueue:String = properties.getProperty("consume_queue")
-  private final val argsFile:String = "angel.properties"
+ /* private final val argsFile:String = "angel.properties"
   private final val argsMap:Map[String,String] = Source.fromFile(argsFile).getLines().map{f =>
     f.split("=")(0) -> f.split("=")(1)
-  }.toMap[String,String]
+  }.toMap[String,String]*/
 
   def main(args: Array[String]): Unit = {
     val jobConsumer = new JobConsumer(
@@ -52,7 +52,7 @@ object AngelSubmit{
         confMap.foreach {
           case (key, value) =>
             try {
-              jobConf.set(argsMap(key), value.toString)
+              jobConf.set(key, value.toString)
             } catch {
               case e: Exception => LOG.fatal(s"No Such Key $key")
             }
