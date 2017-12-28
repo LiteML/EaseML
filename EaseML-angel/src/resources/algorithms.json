@@ -1,0 +1,38 @@
+[
+  {
+    "name": "lr",
+    "hyperParams": [
+      {
+        "name": "epoch",
+        "tpe": "int",
+        "default": 10
+      },{
+        "name": "learning_rate",
+        "tpe": "double",
+        "default": 0.1
+      },{
+        "name": "loss",
+        "tpe": "option",
+        "default": [
+          "loss1",
+          "loss2"
+        ]
+      }]
+  },{
+    "name": "k-means",
+    "hyperParams": [
+      {
+        "name": "epoch",
+        "tpe": "int",
+        "default": 10
+      },{
+        "name": "metric",
+        "tpe": "option",
+        "default": [
+          "cosine",
+          "euclidean",
+          "mahalanobis"
+        ]
+      }]
+  }
+]
