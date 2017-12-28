@@ -1,19 +1,15 @@
 package easeml.console.controllers
 
-import easeml.common.queue.MessageConsumer
+import easeml.common.queue.{Message, MessageConsumer}
 import easeml.common.queue.messages.Job
+import play.api.libs.json.Json
 
 /**
   * Created by takun on 26/12/2017.
   */
 object TestMq {
   def main(args: Array[String]): Unit = {
-    val consumer = new MessageConsumer[Job]("localhost", 5672, "platform", "platform", "job")
-    consumer.consume(handler = {
-      job =>
-        println(job.toJSON)
-        Thread.sleep(5000)
-    }, parall = 2)
-    println("xxxxxxxxxxxxxx")
+    val job2 = Message.fromJSON[Job]("""{"id":"lr","algorithm":"lr","params":{"i":4}}""")
+    println(job2)
   }
 }

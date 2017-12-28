@@ -11,7 +11,7 @@ object TestQueue extends JUnitSuite{
 
   def test_publish() {
     val publisher = new MessagePublisher("localhost", 5672, "platform", "platform", "job")
-    0 until 100 foreach {
+    0 until 10 foreach {
       i =>
         println(i)
         val job = new Job("lr", "lr", Map("i" -> (i + 100)))
@@ -28,12 +28,25 @@ object TestQueue extends JUnitSuite{
       job =>
         println(job.toJSON)
         Thread.sleep(5000)
-    }, parall = 1)
+    }, parall = 5)
+  }
+
+  def declare_queue() {
+    val mq = new MqBase("localhost", 5672, "platform", "platform")
+    mq.declare_queue("test_queue")
+    mq.close()
+  }
+
+  def delete_queue() {
+    val mq = new MqBase("localhost", 5672, "platform", "platform")
+    println(mq.delete_queue("test_queue"))
+    mq.close()
   }
 
   def main(args: Array[String]): Unit = {
+//    delete_queue()
 //    test_publish()
-//    test_consume()
+    test_consume()
     val algorithm = new Algorithm("lr", List(
       Algorithm.HyperParam("epoch", "int", 10),
       Algorithm.HyperParam("learning_rate", "double", 0.1),
