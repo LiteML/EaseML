@@ -11,7 +11,7 @@ object TestQueue extends JUnitSuite{
 
   def test_publish() {
     val publisher = new MessagePublisher("localhost", 5672, "platform", "platform", "job")
-    0 until 10 foreach {
+    0 until 1 foreach {
       i =>
         println(i)
         val job = new Job("lr", "lr", Map("i" -> (i + 100)))
@@ -45,7 +45,7 @@ object TestQueue extends JUnitSuite{
 
   def main(args: Array[String]): Unit = {
 //    delete_queue()
-//    test_publish()
+    test_publish()
     test_consume()
     val algorithm = new Algorithm("lr", List(
       Algorithm.HyperParam("epoch", "int", 10),
