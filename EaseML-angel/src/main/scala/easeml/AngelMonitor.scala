@@ -16,7 +16,6 @@ import org.apache.commons.logging.{Log, LogFactory}
 import scala.collection.JavaConversions._
 import scala.concurrent.Future
 import scala.io.Source
-import scala.util.{Failure, Success}
 /**
   * Created by chris on 12/26/17.
   */
@@ -75,7 +74,7 @@ class AngelMonitor {
     master = getField(client,"master").asInstanceOf[MasterProtocol]
 
     import scala.concurrent.ExecutionContext.Implicits.global
-    val f:Future[Unit] = Future {
+    Future {
       try {
         while(!isFinished){
           publishJobReport(metricPublish.publish,jobId)
@@ -86,11 +85,6 @@ class AngelMonitor {
       } catch {
         case e:Exception => e.printStackTrace()
       }
-    }
-    f onComplete {
-      // todo post is unit ?
-      case Success(posts) => for(post<-posts) println(post)
-      case Failure(t) => println("An error has occured: " + t.getMessage)
     }
   }
 
