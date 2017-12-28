@@ -8,7 +8,6 @@ import play.api.libs.json._
 import easeml.common.queue.messages.{Algorithm, Job, Metrics, RegisterAlgorithmService}
 
 
-
 /**
   * Created by takun on 28/12/2017.
   */
