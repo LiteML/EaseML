@@ -7,11 +7,10 @@ import com.rabbitmq.client._
 /**
   * Created by takun on 20/11/2017.
   */
-private [queue] abstract class MqBase(host:String,
+class MqBase(host:String,
              port:Int,
              user:String,
-             password:String,
-             queue:String) {
+             password:String) {
   protected val factory = new ConnectionFactory()
   factory.setUsername(user)
   factory.setPassword(password)
@@ -20,12 +19,20 @@ private [queue] abstract class MqBase(host:String,
   protected val conn = factory.newConnection
   protected val channel = conn.createChannel()
 
+  def declare_queue(queue: String) = {
+    channel.queueDeclare(queue, true, false, false, null).getMessageCount
+  }
+
+  def delete_queue(queue: String) = {
+    channel.queueDelete(queue).getMessageCount
+  }
+
   def close() = {
     channel.close()
     conn.close()
   }
 
-  protected def _consume(handler : Array[Byte] => Unit, parall:Int = 1) = {
+  protected def _consume(queue:String, handler : Array[Byte] => Unit, parall:Int = 1) = {
     val pool = Executors.newFixedThreadPool(parall)
     0 until parall foreach {
       i =>
@@ -41,7 +48,7 @@ private [queue] abstract class MqBase(host:String,
     }
   }
 
-  protected def _publish(msg: Array[Byte]): Unit = {
+  protected def _publish(queue:String, msg: Array[Byte]): Unit = {
     channel.basicPublish("", queue, null, msg)
   }
 }
@@ -50,9 +57,9 @@ class MessageConsumer[M <: Message : Manifest](host:String,
                                                port:Int,
                                                user:String,
                                                password:String,
-                                               queue:String) extends MqBase(host, port, user, password, queue) {
+                                               queue:String) extends MqBase(host, port, user, password) {
   def consume(handler : M => Unit, parall:Int = 1) = {
-    _consume({
+    _consume(queue, {
       msg =>
         val msg_str = new String(msg, "utf-8")
         val job = Message.fromJSON[M](msg_str)
@@ -65,6 +72,6 @@ class MessagePublisher(host:String,
                        port:Int,
                        user:String,
                        password:String,
-                       queue:String) extends MqBase(host, port, user, password, queue) {
-  def publish(msg : Message) = _publish(msg.toJSON.getBytes("utf-8"))
+                       queue:String) extends MqBase(host, port, user, password) {
+  def publish(msg : Message) = _publish(queue, msg.toJSON.getBytes("utf-8"))
 }

@@ -1,6 +1,8 @@
 package easeml.console.controllers
 
 import javax.inject._
+
+import easeml.common.queue.messages.Job
 import play.api.mvc._
 import easeml.console.views
 

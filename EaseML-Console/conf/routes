@@ -11,3 +11,4 @@ GET     /assets/*file               controllers.Assets.versioned(path="/public",
 
 # job
 GET     /job/summit                           easeml.console.controllers.JobController.summit
+POST     /job/summit                           easeml.console.controllers.JobController.summit
