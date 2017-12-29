@@ -34,5 +34,54 @@
           "mahalanobis"
         ]
       }]
+  },
+  {
+    "name": "MLR",
+    "hyperParams": [
+      {
+        "name": "ml.epoch.num",
+        "tpe": "int",
+        "default": 10
+      },{
+        "name": "ml.batch.sample.ratio",
+        "tpe": "double",
+        "default": 1.0
+      },
+      {
+        "name": "ml.learn.rate",
+        "tpe":"double",
+        "default": 1.0
+      },
+      {
+        "name": "ml.learn.decay",
+        "tpe":"double",
+        "default":0.1
+      },
+      {
+        "name":"ml.reg.l2",
+        "tpe":"double",
+        "default":0.02
+      },
+      {
+        "name":"ml.mlr.rank",
+        "tpe":"double",
+        "default":5
+      },
+      {
+        "name":"ml.mlr.v.init",
+        "tpe":"double",
+        "default":0.1
+      },
+      {
+        "name": "ml.validate.ratio",
+        "tpe":"double",
+        "default":0.1
+      },
+      {
+        "name": "ml.sgd.batch.num",
+        "tpe": "int",
+        "default": 10
+      }
+    ]
   }
 ]
