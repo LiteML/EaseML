@@ -81,11 +81,11 @@ object AngelSubmit{
     val json = Source.fromFile(registerJson).getLines().mkString
     val algosProfile = parse(json)
     val algorithms = array(algosProfile).map {algo =>
-      val name = string(algo \\ "name")
-      val hyperParams = array(algo \\ "hyperParams").map{obj =>
-        val algoName = string(obj \\ "name")
-        val tpe = string(obj \\ "tpe")
-        val default = obj \\ "default" match {
+      val name = string(algo \ "name")
+      val hyperParams = array(algo \ "hyperParams").map{obj =>
+        val algoName = string(obj \ "name")
+        val tpe = string(obj \ "tpe")
+        val default = obj \ "default" match {
           case JArray(arr) => arr
           case JDouble(v) => v
           case JInt(v) => v.toInt
@@ -98,7 +98,8 @@ object AngelSubmit{
     }
 
     val registerMessage = new RegisterAlgorithmService("angel", algorithms)
-    val registerPublish = new MessagePublisher(registerHost,
+    val registerPublish = new MessagePublisher(
+      registerHost,
       registerPort,
       registerUser,
       registerPassword,
