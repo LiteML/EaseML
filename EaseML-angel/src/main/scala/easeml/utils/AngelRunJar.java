@@ -30,88 +30,106 @@ public class AngelRunJar {
     private static String angelSysConfFile = "angel-site.xml";
 
     public static void submit(Configuration jobConf) throws Exception {
-        final Configuration conf = new Configuration();
-        // load hadoop configuration
-        String hadoopHomePath = System.getenv("HADOOP_HOME");
-        if (hadoopHomePath == null) {
-            LOG.warn("HADOOP_HOME is empty.");
-        } else {
-            conf.addResource(new Path(hadoopHomePath + "/etc/hadoop/yarn-site.xml"));
-            conf.addResource(new Path(hadoopHomePath + "/etc/hadoop/hdfs-site.xml"));
-        }
+        if(jobConf.get(AngelConf.ANGEL_DEPLOY_MODE).equals("YARN")) {
+            final Configuration conf = new Configuration();
+            // load hadoop configuration
+            String hadoopHomePath = System.getenv("HADOOP_HOME");
+            if (hadoopHomePath == null) {
+                LOG.warn("HADOOP_HOME is empty.");
+            } else {
+                conf.addResource(new Path(hadoopHomePath + "/etc/hadoop/yarn-site.xml"));
+                conf.addResource(new Path(hadoopHomePath + "/etc/hadoop/hdfs-site.xml"));
+            }
 
-        // load angel system configuration
-        String angelHomePath = System.getenv("ANGEL_HOME");
-        if (angelHomePath == null) {
-            LOG.fatal("ANGEL_HOME is empty, please set it first");
-            throw new InvalidParameterException("ANGEL_HOME is empty, please set it first");
-        }
-        LOG.info("angelHomePath conf path=" + angelHomePath + "/conf/" + angelSysConfFile);
-        conf.addResource(new Path(angelHomePath + "/conf/" + angelSysConfFile));
-        LOG.info("load system config file success");
+            // load angel system configuration
+            String angelHomePath = System.getenv("ANGEL_HOME");
+            if (angelHomePath == null) {
+                LOG.fatal("ANGEL_HOME is empty, please set it first");
+                throw new InvalidParameterException("ANGEL_HOME is empty, please set it first");
+            }
+            LOG.info("angelHomePath conf path=" + angelHomePath + "/conf/" + angelSysConfFile);
+            conf.addResource(new Path(angelHomePath + "/conf/" + angelSysConfFile));
+            LOG.info("load system config file success");
 
-        // load user configuration:
-        // load user config file
-        String jobConfFile = jobConf.get(AngelConf.ANGEL_APP_CONFIG_FILE);
-        if(jobConfFile != null) {
-            LOG.info("user app config file " + jobConfFile);
-            conf.addResource(new Path(jobConfFile));
-        } else {
-            jobConfFile = conf.get(AngelConf.ANGEL_APP_CONFIG_FILE);
+            // load user configuration:
+            // load user config file
+            String jobConfFile = jobConf.get(AngelConf.ANGEL_APP_CONFIG_FILE);
             if(jobConfFile != null) {
                 LOG.info("user app config file " + jobConfFile);
                 conf.addResource(new Path(jobConfFile));
-            }
-        }
-
-        // load command line parameters
-        Iterator<Entry<String, String>> iter = jobConf.iterator();
-        Entry<String, String> entry = null;
-        while(iter.hasNext()) {
-            entry = iter.next();
-            conf.set(entry.getKey(), entry.getValue());
-        }
-
-        // load user job resource files
-        String userResourceFiles = conf.get(AngelConf.ANGEL_APP_USER_RESOURCE_FILES);
-        if(userResourceFiles != null) {
-            addResourceFiles(conf, userResourceFiles);
-        }
-
-        // load user job jar if it exist
-        String jobJar = conf.get(AngelConf.ANGEL_JOB_JAR);
-        if (jobJar != null) {
-            loadJar(jobJar);
-            addResourceFiles(conf, jobJar);
-        }
-
-        // Expand the environment variable
-        try {
-            expandEnv(conf);
-        } catch (Exception x) {
-            LOG.warn("expand env in configuration failed.", x);
-        }
-
-        // instance submitter class
-        final String submitClassName =
-                conf.get(AngelConf.ANGEL_APP_SUBMIT_CLASS, AngelConf.DEFAULT_ANGEL_APP_SUBMIT_CLASS);
-        UserGroupInformation ugi = UGITools.getCurrentUser(conf);
-        ugi.doAs(new PrivilegedExceptionAction<String>() {
-            @Override public String run() throws Exception {
-                AppSubmitter submmiter = null;
-                try {
-                    Class<?> submitClass = Class.forName(submitClassName);
-                    submmiter = (AppSubmitter) submitClass.newInstance();
-                } catch (Exception x) {
-                    String message = "load submit class failed " + x.getMessage();
-                    LOG.fatal(message, x);
-                    throw new InvalidParameterException(message);
+            } else {
+                jobConfFile = conf.get(AngelConf.ANGEL_APP_CONFIG_FILE);
+                if(jobConfFile != null) {
+                    LOG.info("user app config file " + jobConfFile);
+                    conf.addResource(new Path(jobConfFile));
                 }
-
-                submmiter.submit(conf);
-                return "OK";
             }
-        });
+
+            // load command line parameters
+            Iterator<Entry<String, String>> iter = jobConf.iterator();
+            Entry<String, String> entry = null;
+            while(iter.hasNext()) {
+                entry = iter.next();
+                conf.set(entry.getKey(), entry.getValue());
+            }
+
+            // load user job resource files
+            String userResourceFiles = conf.get(AngelConf.ANGEL_APP_USER_RESOURCE_FILES);
+            if(userResourceFiles != null) {
+                addResourceFiles(conf, userResourceFiles);
+            }
+
+            // load user job jar if it exist
+            String jobJar = conf.get(AngelConf.ANGEL_JOB_JAR);
+            if (jobJar != null) {
+                loadJar(jobJar);
+                addResourceFiles(conf, jobJar);
+            }
+
+            // Expand the environment variable
+            try {
+                expandEnv(conf);
+            } catch (Exception x) {
+                LOG.warn("expand env in configuration failed.", x);
+            }
+
+            // instance submitter class
+            final String submitClassName =
+                    conf.get(AngelConf.ANGEL_APP_SUBMIT_CLASS, AngelConf.DEFAULT_ANGEL_APP_SUBMIT_CLASS);
+            UserGroupInformation ugi = UGITools.getCurrentUser(conf);
+            ugi.doAs(new PrivilegedExceptionAction<String>() {
+                @Override public String run() throws Exception {
+                    AppSubmitter submmiter = null;
+                    try {
+                        Class<?> submitClass = Class.forName(submitClassName);
+                        submmiter = (AppSubmitter) submitClass.newInstance();
+                    } catch (Exception x) {
+                        String message = "load submit class failed " + x.getMessage();
+                        LOG.fatal(message, x);
+                        throw new InvalidParameterException(message);
+                    }
+
+                    submmiter.submit(conf);
+                    return "OK";
+                }
+            });
+        } else if(jobConf.get(AngelConf.ANGEL_DEPLOY_MODE).equals("LOCAL")) {
+            AppSubmitter submmiter = null;
+            try {
+                final String submitClassName =
+                        jobConf.get(AngelConf.ANGEL_APP_SUBMIT_CLASS, AngelConf.DEFAULT_ANGEL_APP_SUBMIT_CLASS);
+                Class<?> submitClass = Class.forName(submitClassName);
+                submmiter = (AppSubmitter) submitClass.newInstance();
+            } catch (Exception x) {
+                String message = "load submit class failed " + x.getMessage();
+                LOG.fatal(message, x);
+                throw new InvalidParameterException(message);
+            }
+            submmiter.submit(jobConf);
+        } else {
+            LOG.fatal("No Such Deploy Method");
+        }
+;
     }
 
     private static void expandEnv(Configuration conf) {

@@ -1,4 +1,4 @@
-package angel
+package easeml
 
 import java.io.BufferedReader
 import java.util.Properties
@@ -6,8 +6,8 @@ import java.util.Properties
 import easeml.common.queue.MessagePublisher
 import easeml.common.queue.messages.Job
 
-import scala.io.Source
 import scala.collection.mutable
+import scala.io.Source
 /**
   * Created by chris on 1/2/18.
   */
