@@ -31,9 +31,14 @@ object AngelSubmit{
     * Basic Configurations
     */
   private final val confFile:String = "config.properties"
-  private final val properties = new Properties()
-  private final val reader:BufferedReader = Source.fromURL(getClass.getClassLoader.getResource(confFile)).bufferedReader()
-  properties.load(reader)
+  private final val properties = {
+    val p = new Properties()
+//    val reader = getClass.getClassLoader.getResourceAsStream(confFile)
+    val reader = Thread.currentThread().getContextClassLoader.getResourceAsStream(confFile)
+    p.load(reader)
+    reader.close()
+    p
+  }
   private final val numThreads:Int = properties.getProperty("threads", "1").toInt
   private final val consumeHost:String = properties.getProperty("consume_host")
   private final val consumePort:Int = Integer.parseInt(properties.getProperty("consume_port"))
@@ -54,7 +59,7 @@ object AngelSubmit{
 
   def main(args: Array[String]): Unit = {
 
-    registerAlgos()
+//    registerAlgos()
 
     val jobConsumer = new MessageConsumer[Job](
       consumeHost,

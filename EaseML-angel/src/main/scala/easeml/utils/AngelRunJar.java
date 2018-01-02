@@ -30,7 +30,7 @@ public class AngelRunJar {
     private static String angelSysConfFile = "angel-site.xml";
 
     public static void submit(Configuration jobConf) throws Exception {
-        if(jobConf.get(AngelConf.ANGEL_DEPLOY_MODE).equals("YARN")) {
+        if(jobConf.get(AngelConf.ANGEL_DEPLOY_MODE, "local").equalsIgnoreCase("YARN")) {
             final Configuration conf = new Configuration();
             // load hadoop configuration
             String hadoopHomePath = System.getenv("HADOOP_HOME");
@@ -113,7 +113,7 @@ public class AngelRunJar {
                     return "OK";
                 }
             });
-        } else if(jobConf.get(AngelConf.ANGEL_DEPLOY_MODE).equals("LOCAL")) {
+        } else if(jobConf.get(AngelConf.ANGEL_DEPLOY_MODE, "local").equalsIgnoreCase("LOCAL")) {
             AppSubmitter submmiter = null;
             try {
                 final String submitClassName =
