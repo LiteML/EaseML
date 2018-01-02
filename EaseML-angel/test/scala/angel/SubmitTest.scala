@@ -2,17 +2,21 @@ package angel
 import org.junit._
 import java.io.BufferedReader
 
-import easeml.common.queue.MessageConsumer
+import easeml.common.queue.{MessageConsumer, MessagePublisher}
 import org.apache.commons.logging.{Log, LogFactory}
 import java.util.Properties
 
 import com.tencent.angel.conf.AngelConf
 import com.tencent.angel.ml.conf.MLConf
-import easeml.common.queue.messages.Job
+import easeml.common.queue.messages.Algorithm.HyperParam
+import easeml.common.queue.messages.{Algorithm, Job, RegisterAlgorithmService}
 import easeml.utils.AngelRunJar._
+import easeml.utils.json.{array, string}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.mapreduce.lib.input.CombineTextInputFormat
+import org.json4s.JsonAST._
+import org.json4s.native.JsonMethods.parse
 
 import scala.io.Source
 /**
@@ -26,9 +30,10 @@ class SubmitTest {
   /**
     * Basic Configurations
     */
+
   private final val confFile:String = "config.properties"
   private final val properties = new Properties()
-  private final val reader:BufferedReader = Source.fromURL(getClass.getResource(confFile)).bufferedReader()
+  private final val reader:BufferedReader = Source.fromURL(getClass.getClassLoader.getResource(confFile)).bufferedReader()
   properties.load(reader)
   private final val numThreads:Int = properties.getProperty("threads", "1").toInt
   private final val consumeHost:String = properties.getProperty("consume_host")
@@ -36,9 +41,16 @@ class SubmitTest {
   private final val consumeUser:String = properties.getProperty("consume_user")
   private final val consumePassword:String = properties.getProperty("consume_password")
   private final val consumeQueue:String = properties.getProperty("consume_queue")
+  private final val registerJson:String = "algorithms.json"
+  private final val registerHost:String = properties.getProperty("register_host")
+  private final val registerPort:Int = Integer.parseInt(properties.getProperty("register_port"))
+  private final val registerUser:String = properties.getProperty("register_user")
+  private final val registerPassword:String = properties.getProperty("register_password")
+  private final val registerQueue:String = properties.getProperty("register_queue")
+
 
   private final val algorithmFile:String = "angel.properties"
-  private final val algorithmMap:Map[String,String] = Source.fromFile(algorithmFile).getLines().map{f =>
+  private final val algorithmMap:Map[String,String] = Source.fromURL(getClass.getClassLoader.getResource(algorithmFile)).getLines().map{f =>
     f.split("=")(0) -> f.split("=")(1)
   }.toMap[String,String]
 
@@ -48,6 +60,9 @@ class SubmitTest {
 
   @Test
   def testSubmit():Unit = {
+
+    registerAlgos()
+
     val jobConsumer = new MessageConsumer[Job](
       consumeHost,
       consumePort,
@@ -94,5 +109,37 @@ class SubmitTest {
           case e: Exception => e.printStackTrace()
         }
     },numThreads)
+  }
+
+
+  private def registerAlgos():Unit = {
+    val json = Source.fromURL(getClass.getClassLoader.getResource(registerJson)).getLines().mkString
+    val algosProfile = parse(json)
+    val algorithms = array(algosProfile).map {algo =>
+      val name = string(algo \ "name")
+      val hyperParams = array(algo \ "hyperParams").map{obj =>
+        val algoName = string(obj \ "name")
+        val tpe = string(obj \ "tpe")
+        val default = obj \ "default" match {
+          case JArray(arr) => arr
+          case JDouble(v) => v
+          case JInt(v) => v.toInt
+          case JBool(v) => v
+          case JString(v) => v
+        }
+        HyperParam(algoName,tpe,default)
+      }
+      new Algorithm(name, hyperParams)
+    }
+
+    val registerMessage = new RegisterAlgorithmService("angel", algorithms)
+    val registerPublish = new MessagePublisher(
+      registerHost,
+      registerPort,
+      registerUser,
+      registerPassword,
+      registerQueue)
+    registerPublish.publish(registerMessage)
+    // registerPublish.close()
   }
 }
