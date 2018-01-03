@@ -1,6 +1,5 @@
 package easeml
 
-import java.io.BufferedReader
 
 import org.json4s._
 import org.json4s.native.JsonMethods._
@@ -15,8 +14,6 @@ import utils.json._
 import easeml.common.queue.messages.{Algorithm, Job, RegisterAlgorithmService}
 import utils.AngelRunJar.submit
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.FileSystem
-import org.apache.hadoop.mapreduce.lib.input.CombineTextInputFormat
 
 import scala.io.Source
 
@@ -59,7 +56,7 @@ object AngelSubmit{
 
   def main(args: Array[String]): Unit = {
 
-//    registerAlgos()
+    registerAlgos()
 
     val jobConsumer = new MessageConsumer[Job](
       consumeHost,
