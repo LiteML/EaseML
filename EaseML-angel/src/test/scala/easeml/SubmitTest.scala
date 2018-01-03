@@ -71,6 +71,7 @@ object SubmitTest {
         jobConf.set("angel.app.submit.class", algorithmMap(algorithm))
         jobConf.set("angel.deploy.mode","LOCAL")
         jobConf.setBoolean("mapred.mapper.new-api", true)
+        jobConf.set("angel.monitor.class","easeml.AngelMonitor")
         jobConf.set(AngelConf.ANGEL_INPUTFORMAT_CLASS, classOf[CombineTextInputFormat].getName)
         jobConf.setBoolean(AngelConf.ANGEL_JOB_OUTPUT_PATH_DELETEONEXIST, true)
         jobConf.setInt(AngelConf.ANGEL_WORKERGROUP_NUMBER, 1)

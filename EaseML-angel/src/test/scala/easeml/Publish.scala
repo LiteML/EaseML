@@ -55,11 +55,7 @@ object Publish {
     confMap += (("ml.mlr.rank", rank))
     confMap += (("ml.mlr.v.init", vInit))
     confMap += (("ml.sgd.batch.num", batchNum))
-    val job:Job = new Job(
-      "debug",
-      "MLR",
-      confMap.toMap[String,Any]
-    )
+
     val publisher = new MessagePublisher(
       consumeHost,
       consumePort,
@@ -67,7 +63,14 @@ object Publish {
       consumePassword,
       consumeQueue
     )
-    publisher.publish(job)
+    (0 until 10) foreach{ i =>
+      val job:Job = new Job(
+        s"debug + $i",
+        "MLR",
+        confMap.toMap[String,Any]
+      )
+      publisher.publish(job)
+    }
     publisher.close()
   }
 }
