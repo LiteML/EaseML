@@ -1,3 +1,4 @@
+/*
 package controllers
 
 import easeml.console.controllers.HomeController
@@ -44,3 +45,4 @@ class HomeControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting
     }
   }
 }
+*/

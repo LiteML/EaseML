@@ -9,4 +9,6 @@ lib_managed/
 bin/
 project/
 lib/*
+log/
+logs/
 
