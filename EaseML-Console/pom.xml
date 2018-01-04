@@ -90,7 +90,8 @@
             <plugin>
                 <groupId>com.google.code.play2-maven-plugin</groupId>
                 <artifactId>play2-maven-plugin</artifactId>
-                <version>1.0.0-beta6</version>
+                <!--<version>1.0.0-beta9</version>-->
+                <version>1.0.0-rc1</version>
                 <extensions>true</extensions>
                 <configuration>
                     <!-- if using controllers without dependency injection; default value is "injected" -->
@@ -133,7 +134,7 @@
             <plugin>
                 <groupId>com.google.code.sbt-compiler-maven-plugin</groupId>
                 <artifactId>sbt-compiler-maven-plugin</artifactId>
-                <version>1.0.0</version>
+                <version>1.0.0-rc1</version>
             </plugin>
         </plugins>
     </build>
