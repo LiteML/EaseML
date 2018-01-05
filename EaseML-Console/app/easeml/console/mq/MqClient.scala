@@ -3,7 +3,7 @@ package easeml.console.mq
 import javax.inject.{Inject, Singleton}
 
 import easeml.common.queue.{Message, MessageConsumer, MessagePublisher}
-import easeml.common.queue.messages.RegisterAlgorithmService
+import easeml.common.queue.messages.{RegisterAlgorithmService, Metrics}
 import play.api.Configuration
 
 /**
@@ -16,10 +16,10 @@ class MqClient @Inject()(conf: Configuration) {
   private val MQ_PORT = "mq.port"
   private val MQ_USER = "mq.user"
   private val MQ_PASSWORD = "mq.password"
-  private val MQ_REGISTER = "mq.register"
+  private val MQ_REGISTER = "mq.queue.register"
+  private val MQ_METRIC = "mq.queue.metric"
 
   private val JOB_PREFIX = "job_"
-  private val METRIC_PREFIX = "metric_"
 
   def new_publisher(queue:String) = {
     new MessagePublisher(
@@ -32,7 +32,7 @@ class MqClient @Inject()(conf: Configuration) {
   }
 
   def new_consumer[M <: Message: Manifest](queue:String) = {
-    new MessageConsumer(
+    new MessageConsumer[M](
       conf.get[String](MQ_HOST),
       conf.get[Int](MQ_PORT),
       conf.get[String](MQ_USER),
@@ -42,7 +42,8 @@ class MqClient @Inject()(conf: Configuration) {
   }
 
   def new_register_consumer() = new_consumer[RegisterAlgorithmService](conf.get[String](MQ_REGISTER))
+  def metric_consumer() = new_consumer[Metrics](conf.get[String](MQ_METRIC))
 
   def job_queue(name:String) = JOB_PREFIX + name
-  def metric_queue(name:String) = METRIC_PREFIX + name
+  def metric_queue = conf.get[String](MQ_METRIC)
 }

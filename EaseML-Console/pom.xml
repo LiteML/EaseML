@@ -48,6 +48,11 @@
             <artifactId>play-json_${scala.binary.version}</artifactId>
             <version>2.6.8</version>
         </dependency>
+        <dependency>
+            <groupId>com.typesafe.play</groupId>
+            <artifactId>play-slick_${scala.binary.version}</artifactId>
+            <version>3.0.0</version>
+        </dependency>
 
         <!-- default DI framework -->
         <!-- see https://www.playframework.com/documentation/2.6.x/Migration26#Guice-DI-support-moved-to-separate-module for more info -->
