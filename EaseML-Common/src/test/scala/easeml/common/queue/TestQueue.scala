@@ -27,8 +27,9 @@ object TestQueue extends JUnitSuite{
     consumer.consume(handler = {
       job =>
         println(job.toJSON)
-        Thread.sleep(5000)
-    }, parall = 5)
+        Thread.sleep(10000)
+//        sys.error("xx")
+    }, parall = 4)
   }
 
   def declare_queue() {
@@ -45,17 +46,17 @@ object TestQueue extends JUnitSuite{
 
   def main(args: Array[String]): Unit = {
 //    delete_queue()
-    test_publish()
+//    test_publish()
     test_consume()
-    val algorithm = new Algorithm("lr", List(
-      Algorithm.HyperParam("epoch", "int", 10),
-      Algorithm.HyperParam("learning_rate", "double", 0.1),
-      Algorithm.HyperParam("loss", "option", List("loss1", "loss2"))
-    ))
-    val json = algorithm.toJSON
-    println(json)
-    val algo2 = Message.fromJSON[Algorithm](json)
-    println(algo2.name)
-    println(algo2.hyperParams.mkString(","))
+//    val algorithm = new Algorithm("lr", List(
+//      Algorithm.HyperParam("epoch", "int", 10),
+//      Algorithm.HyperParam("learning_rate", "double", 0.1),
+//      Algorithm.HyperParam("loss", "option", List("loss1", "loss2"))
+//    ))
+//    val json = algorithm.toJSON
+//    println(json)
+//    val algo2 = Message.fromJSON[Algorithm](json)
+//    println(algo2.name)
+//    println(algo2.hyperParams.mkString(","))
   }
 }

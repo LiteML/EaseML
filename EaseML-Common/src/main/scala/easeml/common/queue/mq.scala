@@ -1,6 +1,6 @@
 package easeml.common.queue
 
-import java.util.concurrent.Executors
+import java.util.concurrent.{Callable, Executors, LinkedBlockingDeque}
 
 import com.rabbitmq.client._
 
@@ -32,19 +32,46 @@ class MqBase(host:String,
     conn.close()
   }
 
-  protected def _consume(queue:String, handler : Array[Byte] => Unit, parall:Int = 1) = {
+  protected def _consume(queue:String, handler : Array[Byte] => Unit, parall: Int, requeue:Boolean) = {
     val pool = Executors.newFixedThreadPool(parall)
+    val messages = new LinkedBlockingDeque[Array[Byte]](1)
+    val ack = new LinkedBlockingDeque[Int](1)
+    channel.basicQos(0, 1, false)
+    // consume
+    channel.basicConsume(queue, false, new DefaultConsumer(channel) {
+      override def handleDelivery(consumerTag: String,
+                                  envelope: Envelope,
+                                  properties: AMQP.BasicProperties,
+                                  body: Array[Byte]): Unit = {
+        if(messages.offer(body)) {
+          ack.take()
+          channel.basicAck(envelope.getDeliveryTag, false)
+        }else{
+          channel.basicNack(envelope.getDeliveryTag, false, true)
+        }
+      }
+    })
     0 until parall foreach {
       i =>
-        val runnable = new Runnable {
+        val task = new Runnable {
           override def run(): Unit = {
-            while(true){
-              val msg = channel.basicGet(queue, true).getBody
-              handler(msg)
+            while (true) {
+              val message = messages.take()
+              ack.offer(1)
+              try{
+                handler(message)
+              }catch {
+                case e : Exception =>
+                  e.printStackTrace()
+                  if(requeue) {
+                    println("requeue message")
+                    _publish(queue, message)
+                  }
+              }
             }
           }
         }
-        pool.submit(runnable)
+        pool.submit(task)
     }
   }
 
@@ -58,13 +85,13 @@ class MessageConsumer[M <: Message : Manifest](host:String,
                                                user:String,
                                                password:String,
                                                queue:String) extends MqBase(host, port, user, password) {
-  def consume(handler : M => Unit, parall:Int = 1) = {
+  def consume(handler : M => Unit, parall:Int = 1, requeue:Boolean = true): Unit = {
     _consume(queue, {
       msg =>
         val msg_str = new String(msg, "utf-8")
         val job = Message.fromJSON[M](msg_str)
         handler(job)
-    }, parall)
+    }, parall, requeue)
   }
 }
 
@@ -73,5 +100,5 @@ class MessagePublisher(host:String,
                        user:String,
                        password:String,
                        queue:String) extends MqBase(host, port, user, password) {
-  def publish(msg : Message) = _publish(queue, msg.toJSON.getBytes("utf-8"))
+  def publish(msg : Message) : Unit = _publish(queue, msg.toJSON.getBytes("utf-8"))
 }
