@@ -1,10 +1,9 @@
 package easeml
 
-import java.io.BufferedReader
 
 import com.tencent.angel.client.AngelClient
 import com.tencent.angel.master.MasterProtocol
-import com.tencent.angel.protobuf.generated.ClientMasterServiceProtos.{GetJobReportRequest, GetJobReportResponse, JobReportProto}
+import com.tencent.angel.protobuf.generated.ClientMasterServiceProtos.{GetJobReportRequest, GetJobReportResponse, JobReportProto, JobStateProto}
 import java.lang.reflect.Method
 import java.util.Properties
 
@@ -15,6 +14,7 @@ import easeml.common.queue.MessagePublisher
 import org.apache.commons.logging.{Log, LogFactory}
 
 import scala.collection.JavaConversions._
+import scala.collection.mutable
 import scala.concurrent.Future
 /**
   * Created by chris on 12/26/17.
@@ -125,16 +125,28 @@ class AngelMonitor extends Monitor{
 
     if(isFinished || appFailedMessage != null) {
       val epoch = -1
-      val metricTable = Map[String,Double]()
+      lastReport = response
+      val jobState:JobStateProto = lastReport.getJobReport.getJobState
+      val metricTable = mutable.Map[String,Double]()
+      metricTable += ("state" -> 0)
+      if (jobState == JobStateProto.J_SUCCEEDED){
+        metricTable += ("state" -> 0)
+      } else if(jobState == JobStateProto.J_FAILED){
+        metricTable += ("state" -> 1)
+      }else if(jobState == JobStateProto.J_KILLED ||
+        lastReport == null ||
+        (lastReport.getJobReport.getJobState eq JobStateProto.J_NEW)) {
+        metricTable += ("state" -> -1)
+      }
       isFinished = true
-      val metrics = new Metrics(jobId,epoch,metricTable)
+      val metrics = new Metrics(jobId,epoch,metricTable.toMap)
       publish(metrics)
-      lastReport = null
       return
     }
 
     val report: JobReportProto = response.getJobReport
     if (lastReport == null || (report.hasCurIteration && report.getCurIteration != lastReport.getJobReport.getCurIteration)) {
+
       val epoch = report.getCurIteration
       var metricTable = report.getMetricsList.map{f =>
         f.getKey -> f.getValue.toDouble
